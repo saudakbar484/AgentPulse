@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class EvidenceSchema(BaseModel):
-    turn: int = 1
-    quote: str = ""
+    turn: int | str | None = 1
+    quote: str | None = ""
 
 
 class JudgeOutputSchema(BaseModel):
@@ -29,7 +29,15 @@ class JudgeOutputSchema(BaseModel):
             ev = obj.get("evidence")
             if isinstance(ev, str):
                 obj["evidence"] = {"turn": 1, "quote": ev}
-            elif not isinstance(ev, dict):
+            elif isinstance(ev, dict):
+                t = ev.get("turn")
+                try:
+                    ev["turn"] = int(t) if t is not None and str(t).strip().isdigit() else 1
+                except Exception:
+                    ev["turn"] = 1
+                ev["quote"] = str(ev.get("quote") or "")
+                obj["evidence"] = ev
+            else:
                 obj["evidence"] = {"turn": 1, "quote": ""}
 
             # Normalize verdict

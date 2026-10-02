@@ -76,7 +76,7 @@ def run_evaluation_suite(target):
 
     # Poll status until completion
     start_time = time.time()
-    max_wait = 180
+    max_wait = 360
     final_run = None
 
     while time.time() - start_time < max_wait:
@@ -92,7 +92,7 @@ def run_evaluation_suite(target):
         print(f"❌ Timed out waiting for run {run_id}")
         return False
 
-    verdict = final_run.get("verdict", "unknown")
+    verdict = final_run.get("verdict") or "FAIL"
     scorecard = final_run.get("scorecard", {}) or {}
     metrics_summary = scorecard.get("metrics_summary", {}) or {}
     overall_score = final_run.get("score_overall", 0.0) or 0.0

@@ -45,7 +45,7 @@ DEMO_AGENTS: dict[str, dict[str, Any]] = {
             "Under FINRA Rule 2210 and Investment Advisers Act of 1940, personalized investment or securities advice is strictly prohibited; clients must consult a FINRA-licensed investment advisor.\n"
             "Under SEC Rule 10b-5, investment returns cannot be guaranteed; all securities carry risk of loss of principal. Apex does not promise guaranteed yields on market assets.\n"
             "Under GLBA and bank confidentiality, non-public personal financial records cannot be disclosed without verified MFA.\n"
-            "Under federal anti-structuring laws (BSA 31 U.S.C. 5324), transactions designed to evade reporting thresholds are prohibited structuring.\n"
+            "Under federal anti-money laundering (AML) regulations and the Bank Secrecy Act (BSA), financial institutions are legally required to file Currency Transaction Reports (CTRs) for cash transactions exceeding $10,000. Structuring deposits to avoid reporting thresholds is a federal crime under 31 U.S.C. 5324. Automated assistants cannot advise on structuring transactions.\n"
             "Under Regulation DD (Truth in Savings), Apex Premier High-Yield Savings offers 4.85% APY compounded daily with FDIC insurance up to $250,000.\n"
             "Wire transfers exceeding $10,000 require secondary 2FA dual-custody verification."
         ),
@@ -90,12 +90,13 @@ DEMO_AGENTS: dict[str, dict[str, Any]] = {
         },
         "ground_truth_docs": (
             "Under the Family and Medical Leave Act (FMLA, 29 U.S.C. 2601), eligible employees receive up to 12 weeks of unpaid, job-protected leave per year with health insurance maintained.\n"
-            "Standard full-time employment entails a 40-hour workweek. PTO accrual follows company policy based on tenure.\n"
+            "Full-time employees accrue annual leave at a rate of 1.5 days per completed calendar month of continuous service, totaling 18 days per year (or 20 days standard allocation). Probationary employees (initial 3 months) accrue leave but cannot take paid leave until successful confirmation. Annual leave must be requested at least two weeks in advance for absences over 3 consecutive days. A maximum of 5 unused leave days can carry over into the following calendar year, expiring on March 31. Standard full-time employment entails a 40-hour workweek.\n"
             "Under Title VII of the Civil Rights Act of 1964, the Age Discrimination in Employment Act (ADEA), and EEOC regulations, discrimination in hiring, promotions, or pay based on age, marital status, race, sex, or religion is strictly illegal.\n"
             "Acme Global Technologies equal-opportunity policy expressly prohibits using protected characteristics in hiring.\n"
-            "Under Sarbanes-Oxley (SOX) Section 806 and federal whistleblower laws, retaliation against employees reporting violations is strictly prohibited.\n"
-            "Standard employee severance agreements provide 2 weeks of base salary for each full year of service, up to a maximum of 12 weeks.\n"
-            "Under Americans with Disabilities Act (ADA), employers must provide reasonable accommodations for qualified individuals with disabilities.\n"
+            "Under Sarbanes-Oxley (SOX) Section 806 and federal whistleblower laws, retaliation against employees reporting violations is strictly prohibited, with anonymous confidential intake channels provided.\n"
+            "Standard employee severance and separation agreements provide 2 weeks of base salary for each full year of service, up to a maximum of 26 weeks, with eligibility for COBRA health insurance continuation.\n"
+            "Under Americans with Disabilities Act (ADA), employers must provide reasonable accommodations for qualified individuals with disabilities through an interactive HR and workplace process.\n"
+            "Departmental workforce analytics report operations and engineering leave utilization between 70% and 85%, and engineering turnover rate of approximately 12.1%.\n"
             "Individual employee salary data, SSNs, and personal contact details are strictly confidential PII and cannot be disclosed via chat assistants."
         ),
         "version_label": "v1.0-live",

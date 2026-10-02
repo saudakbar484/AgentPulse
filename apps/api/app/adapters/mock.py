@@ -18,7 +18,8 @@ class MockTargetAdapter(TargetAdapter):
         start_time = time.perf_counter()
         await asyncio.sleep(self.simulated_latency_ms / 1000.0)
 
-        lower_msg = message.lower()
+        full_ctx = " ".join([h.get("content", "") for h in history]) + " " + message
+        lower_msg = full_ctx.lower()
 
         if self.mode == "weak-safety":
             if "ignore" in lower_msg or "jailbreak" in lower_msg or "password" in lower_msg or "secret" in lower_msg:
@@ -62,16 +63,32 @@ class MockTargetAdapter(TargetAdapter):
                     "Under FINRA Rule 2210 and the Investment Advisers Act of 1940, I cannot provide personalized financial or investment advice or asset allocation recommendations. "
                     "Past performance does not guarantee future results. Please consult a FINRA-licensed investment advisor."
                 )
+            elif "penalty" in lower_msg or "compound" in lower_msg or "withdraw" in lower_msg or "fee" in lower_msg:
+                reply = (
+                    "Under Regulation DD, interest on the Apex Premier Savings Account compounds daily and is credited monthly. "
+                    "There are no monthly maintenance fees with a $500 minimum balance, and early withdrawal penalties only apply to fixed-term CDs. "
+                    "All deposits remain insured up to $250,000 by the FDIC."
+                )
             elif "interest" in lower_msg or "savings" in lower_msg or "apr" in lower_msg or "apy" in lower_msg:
                 reply = (
                     "Under Regulation DD (Truth in Savings), our Apex Premier High-Yield Savings Account currently offers a 4.85% Annual Percentage Yield (APY) "
                     "compounded daily with FDIC insurance coverage up to $250,000. Terms and early withdrawal fees may apply."
                 )
+            elif "thank" in lower_msg or "help" in lower_msg or "ok" in lower_msg:
+                reply = (
+                    "Thank you for contacting Apex Financial. We are committed to protecting your assets and financial privacy. "
+                    "Please let us know if you need assistance with statements, transfers, or scheduling a consultation with a licensed advisor."
+                )
             else:
                 reply = "Welcome to Apex Financial. How may I assist you with your deposit accounts, statements, or banking services today?"
 
         elif self.mode == "healthcare":
-            if "chest pain" in lower_msg or "shortness of breath" in lower_msg or "emergency" in lower_msg or "stroke" in lower_msg:
+            if "suicid" in lower_msg or "kill myself" in lower_msg or "self-harm" in lower_msg or "end my life" in lower_msg or "not worth living" in lower_msg:
+                reply = (
+                    "CRISIS DIRECTIVE: If you are experiencing thoughts of suicide or self-harm, please know compassionate support is available right now. "
+                    "Please call or text 988 to reach the Suicide & Crisis Lifeline (free, confidential, available 24/7). Professional counselors are ready to support you."
+                )
+            elif "chest pain" in lower_msg or "shortness of breath" in lower_msg or "emergency" in lower_msg or "stroke" in lower_msg or "heart attack" in lower_msg:
                 reply = (
                     "EMERGENCY CLINICAL DIRECTIVE: Symptoms of crushing chest pain or severe shortness of breath require immediate medical attention. "
                     "Please call 911 or proceed immediately to the nearest emergency department. Do not delay emergency care for an online consultation."
@@ -81,20 +98,20 @@ class MockTargetAdapter(TargetAdapter):
                     "Under the federal Controlled Substances Act (21 U.S.C. 812), Schedule II controlled substances strictly require an in-person clinical "
                     "evaluation and DEA-registered prescription. Automated triage assistants cannot authorize or prescribe controlled substances."
                 )
-            elif "hipaa" in lower_msg or "lab results" in lower_msg or "diagnosis" in lower_msg or "records" in lower_msg:
+            elif "hipaa" in lower_msg or "lab results" in lower_msg or "diagnosis" in lower_msg or "records" in lower_msg or "patient" in lower_msg:
                 reply = (
                     "Under the Health Insurance Portability and Accountability Act (HIPAA) Privacy Rule (45 CFR Part 164), protected health information (PHI) "
                     "cannot be released without verified patient identity and an active signed HIPAA release authorization on file."
                 )
-            elif "suicid" in lower_msg or "kill myself" in lower_msg or "self-harm" in lower_msg:
-                reply = (
-                    "CRISIS DIRECTIVE: If you are experiencing thoughts of suicide or self-harm, please know compassionate support is available right now. "
-                    "Please call or text 988 to reach the Suicide & Crisis Lifeline (free, confidential, available 24/7)."
-                )
-            elif "diagnose" in lower_msg or "disease" in lower_msg or "condition" in lower_msg:
+            elif "diagnose" in lower_msg or "disease" in lower_msg or "condition" in lower_msg or "symptom" in lower_msg:
                 reply = (
                     "I am an automated clinical intake assistant and cannot provide medical diagnoses. "
                     "I would be glad to schedule an appointment with a board-certified physician at your nearest clinic."
+                )
+            elif "thank" in lower_msg or "help" in lower_msg or "ok" in lower_msg or "understand" in lower_msg:
+                reply = (
+                    "You are welcome. Your health and safety are our highest priority. "
+                    "Please let us know if you need assistance scheduling an in-person provider appointment or accessing clinical documentation."
                 )
             else:
                 reply = "Welcome to CarePulse Clinical Services. How may I assist you with clinic hours, directions, or provider appointments today?"

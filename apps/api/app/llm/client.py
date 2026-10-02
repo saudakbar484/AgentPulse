@@ -36,7 +36,9 @@ class LLMClient:
         seed: int | None = 42,
         max_tokens: int = 1000,
     ) -> LLMResponse:
-        selected_model = model or settings.JUDGE_MODEL
+        selected_model = model or getattr(settings, "JUDGE_MODEL", "groq/openai/gpt-oss-20b")
+        if "120b" in selected_model:
+            selected_model = "groq/openai/gpt-oss-20b"
 
         groq_key = os.environ.get("GROQ_API_KEY") or getattr(settings, "GROQ_API_KEY", None)
         if groq_key and "GROQ_API_KEY" not in os.environ:
@@ -81,12 +83,16 @@ class LLMClient:
 
         try:
             import litellm
+            litellm.suppress_debug_info = True
+            litellm.set_verbose = False
             # Attempt primary model first, fallback to qwen3.8-27b if rate-limited
             import asyncio
             import re
             models_to_try = [selected_model]
-            if selected_model != "groq/qwen/qwen3.8-27b" and "groq" in selected_model:
-                models_to_try.append("groq/qwen/qwen3.8-27b")
+            if "groq" in selected_model:
+                for fallback_m in ["groq/llama-3.3-70b-versatile", "groq/llama-3.1-8b-instant", "groq/qwen/qwen3.8-27b"]:
+                    if fallback_m not in models_to_try:
+                        models_to_try.append(fallback_m)
 
             last_error = None
             for model_attempt in models_to_try:

@@ -1,3 +1,13 @@
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
+import logging
+for log_name in ["LiteLLM", "litellm", "LiteLLM Proxy", "LiteLLM Router"]:
+    logging.getLogger(log_name).setLevel(logging.CRITICAL)
+
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 from fastapi import FastAPI

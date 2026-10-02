@@ -43,8 +43,8 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str | None = None
     LITELLM_API_BASE: str | None = None
     SIMULATOR_MODEL: str = "groq/openai/gpt-oss-20b"
-    GENERATOR_MODEL: str = "groq/openai/gpt-oss-120b"
-    JUDGE_MODEL: str = "groq/openai/gpt-oss-120b"
+    GENERATOR_MODEL: str = "groq/openai/gpt-oss-20b"
+    JUDGE_MODEL: str = "groq/openai/gpt-oss-20b"
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 
     # Demo Bot
