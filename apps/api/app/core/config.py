@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     CREDENTIAL_ENCRYPTION_KEY: str = "gAAAAABl8n_sample_fernet_key_32_bytes_base64_encoded=="
-    SSRF_ALLOW_PRIVATE_IPS: bool = False
+    SSRF_ALLOW_PRIVATE_IPS: bool = True
 
     # Database
     DATABASE_URL: str = Field(

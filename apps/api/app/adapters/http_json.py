@@ -8,7 +8,7 @@ from app.adapters.ssrf import validate_target_url
 
 class HttpJsonAdapter(TargetAdapter):
     def __init__(self, config: dict[str, Any]) -> None:
-        self.url = config.get("url", "")
+        self.url = config.get("url") or config.get("endpoint_url", "")
         self.method = config.get("method", "POST").upper()
         self.headers = config.get("headers", {})
         self.request_template = config.get("request_template", '{"message": "{{message}}"}')

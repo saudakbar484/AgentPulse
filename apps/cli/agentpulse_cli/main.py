@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 def print_banner() -> None:
     print("==================================================================")
-    print("            AgentPulse — CI Behavioral Quality Gate               ")
+    print("            AgentPulse -- CI Behavioral Quality Gate               ")
     print("==================================================================")
 
 
@@ -31,14 +31,15 @@ def run_cli() -> None:
     # Parse basic args
     i = 1
     while i < len(args):
-        if args[i] == "--agent" and i + 1 < len(args):
+        if args[i] in ("--agent", "--agent-id") and i + 1 < len(args):
             agent_id = args[i + 1]
             i += 2
-        elif args[i] == "--suite" and i + 1 < len(args):
+        elif args[i] in ("--suite", "--suite-id") and i + 1 < len(args):
             suite_id = args[i + 1]
             i += 2
-        elif args[i] == "--fail-under" and i + 1 < len(args):
-            fail_under = float(args[i + 1])
+        elif args[i] in ("--fail-under", "--fail_under") and i + 1 < len(args):
+            raw_val = float(args[i + 1])
+            fail_under = raw_val * 100.0 if raw_val <= 1.0 else raw_val
             i += 2
         elif args[i] == "--api-url" and i + 1 < len(args):
             api_url = args[i + 1]
@@ -50,11 +51,11 @@ def run_cli() -> None:
             i += 1
 
     if cmd == "run":
-        print(f"🎯 Target Agent: {agent_id}")
-        print(f"📦 Test Suite : {suite_id}")
-        print(f"🛡️  CI Pass Gate: {fail_under:.1f}%")
-        print(f"🌐 API Endpoint: {api_url}")
-        print("\n🚀 Dispatching simulation & judging jobs...")
+        print(f"  [TARGET]   : {agent_id}")
+        print(f"  [SUITE]    : {suite_id}")
+        print(f"  [GATE]     : Fail under {fail_under:.1f}%")
+        print(f"  [ENDPOINT] : {api_url}")
+        print("\n  >> Dispatching multi-turn simulation & judging jobs...")
 
         with httpx.Client(timeout=30.0) as client:
             try:
@@ -63,13 +64,13 @@ def run_cli() -> None:
                     json={"agent_id": agent_id, "suite_id": suite_id, "concurrency": 3},
                 )
                 if resp.status_code != 201:
-                    print(f"❌ Failed to trigger run: {resp.text}")
+                    print(f"  [ERROR] Failed to trigger run: {resp.text}")
                     sys.exit(1)
 
                 run_data = resp.json()
                 run_id = run_data["id"]
-                print(f"✅ Run initialized: {run_id}")
-                print("⏳ Waiting for test completion and judging...")
+                print(f"  [OK] Run initialized: {run_id}")
+                print("  [WAIT] Waiting for test execution and calibrated judging...")
 
                 # Poll until completed
                 scorecard = None
@@ -85,7 +86,7 @@ def run_cli() -> None:
 
                 print("\n")
                 if not scorecard:
-                    print("⚠️ Run timed out or completed asynchronously.")
+                    print("  [WARN] Run timed out or completed asynchronously.")
                     sys.exit(0)
 
                 overall_score = scorecard.get("overall_score", 0.0) * 100
@@ -99,7 +100,7 @@ def run_cli() -> None:
                 for m_key, m_info in scorecard.get("metrics_summary", {}).items():
                     m_score = m_info.get("score", 0.0) * 100
                     status_str = "PASS" if m_info.get("passed") else "FAIL"
-                    print(f"  • {m_key:<28} : {m_score:>5.1f}% [{status_str}]")
+                    print(f"  * {m_key:<28} : {m_score:>5.1f}% [{status_str}]")
 
                 # Generate JUnit XML if requested
                 if output_file and output_file.endswith(".xml"):
@@ -108,18 +109,18 @@ def run_cli() -> None:
                         f.write(f'<testsuite name="AgentPulse" tests="4" failures="{0 if verdict == "PASS" else 1}">\n')
                         f.write(f'  <testcase classname="behavior" name="overall_score" time="1.2"/>\n')
                         f.write(f'</testsuite>\n')
-                    print(f"\n📄 Saved JUnit XML report to: {output_file}")
+                    print(f"\n  [REPORT] Saved JUnit XML report to: {output_file}")
 
                 # CI Gate Exit Code
                 if verdict == "PASS" and overall_score >= fail_under:
-                    print("\n🎉 CI Quality Gate: PASSED!")
+                    print("\n  [RESULT] CI Quality Gate: PASSED!")
                     sys.exit(0)
                 else:
-                    print("\n💥 CI Quality Gate: FAILED (Regressions detected)!")
+                    print("\n  [RESULT] CI Quality Gate: FAILED (Regressions detected)!")
                     sys.exit(1)
 
             except Exception as e:
-                print(f"❌ CLI Error: {e}")
+                print(f"  [ERROR] CLI Error: {e}")
                 sys.exit(1)
 
     elif cmd == "version":
