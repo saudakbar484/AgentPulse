@@ -1,83 +1,83 @@
-flowchart LR
-  subgraph Users["Users"]
-    U1["AI Engineer / QA"]
-    U2["Account Manager / Client Viewer"]
-    CI["CI Pipeline - GitHub Actions"]
+flowchart TB
+  %% Client & Ingestion Layer
+  subgraph Clients["Clients & CI/CD Pipelines"]
+    UI["Web Dashboard (Next.js 14 / Neumorphic UI)"]
+    CLI["AgentPulse CLI (agentpulse run --fail-under 0.85)"]
+    GHA["GitHub Actions CI/CD Pipeline"]
+    PROD["Live Production Traffic (SDK Ingest)"]
   end
 
-  subgraph Frontend["Frontend"]
-    UI["Next.js Dashboard"]
-    CLI["AgentPulse CLI"]
+  %% Security & API Gateway Layer
+  subgraph Gateway["AgentPulse Gateway & Control Plane (FastAPI)"]
+    API["FastAPI Gateway (/v1)"]
+    SEC["Security Middlewares (OWASP, Rate Limiting)"]
+    SSRF["SSRF Boundary Validator (Private IP Blocking)"]
+    AUTH["Multi-Tenant Auth & RBAC (Admin, Evaluator, Viewer)"]
   end
 
-  subgraph Core["AgentPulse Core - FastAPI"]
-    API["API Gateway"]
-    AUTH["Auth and RBAC"]
-    MON["Monitoring Service"]
-    ALERT["Alert Manager"]
-    RPT["Report Builder"]
+  %% Core Evaluation & Testing Engines
+  subgraph Engine["Continuous Evaluation & Simulation Engine"]
+    SG["Scenario Generator (Combinatorial Personas & Edge Cases)"]
+    SIM["Multi-Turn Conversation Simulator"]
+    JUDGE["ADR-004 LLM Judge (Majority Voting + Quote Verification)"]
+    RULES["Deterministic Guardrails (PII Regex, Forbidden Words, Latency)"]
+    DRIFT["Production Drift Monitor (Two-Proportion Z-Test Engine)"]
+    ALERT["Alert Manager (Cooldown, Auto-Resolve & Webhooks)"]
   end
 
-  subgraph Workers["Async Workers - Arq"]
-    SG["Scenario Generator"]
-    SIM["Conversation Simulator"]
-    EVAL["Evaluation Engine"]
-    DRIFT["Drift Detector"]
+  %% LLM Routing & Inference Layer
+  subgraph ModelPlane["Model Layer (LiteLLM with Failover & Backoff)"]
+    ROUTER["LiteLLM Router & Failover Engine"]
+    GROQ_PRIMARY["Primary Model: Groq openai/gpt-oss-20b"]
+    GROQ_FB["Failover Models: llama-3.3-70b / qwen3.8-27b"]
   end
 
-  subgraph Data["Data Layer"]
-    REDIS[("Redis Queue")]
-    PG[("PostgreSQL + pgvector")]
-    S3[("MinIO Object Storage")]
+  %% Target Agents Under Evaluation
+  subgraph Targets["Agent Targets Under Evaluation"]
+    PAI["Live Enterprise HR: People-AI (:8085)<br/><i>EEOC Title VII, FMLA, SOX Whistleblower</i>"]
+    FIN["Apex Banking & Securities<br/><i>FINRA Rule 2210, SEC 10b-5, GLBA, BSA</i>"]
+    HLTH["CarePulse Clinical Triage<br/><i>Cardiac 911, HIPAA 45 CFR 164, 988 Lifeline</i>"]
+    RETAIL["Foremost Retail Bot<br/><i>FTC 30-Day, PCI-DSS CVV Protection</i>"]
+    WEAK["Adversarial Insecure Baseline<br/><i>Prompt Injection & Red-Team Vulnerability Probe</i>"]
   end
 
-  subgraph Models["Model Layer"]
-    LITE["LiteLLM Gateway"]
-    OLL["Ollama / vLLM - Qwen, Llama"]
+  %% Data & Telemetry Plane
+  subgraph Storage["Data & Telemetry Layer"]
+    PG[("PostgreSQL 16 (Row-Level Security & pgvector)")]
+    REDIS[("Redis Cache & Asynchronous Broker")]
+    PROM["Prometheus Metrics (/metrics) & Audit Logging"]
   end
 
-  subgraph Targets["Agents Under Test"]
-    T1["Chatbot - HTTP / OpenAI-compatible"]
-    T2["Voice Agent - transcripts / WebSocket"]
-    PROD["Live Production Traffic"]
-  end
+  %% Connections
+  UI -->|"REST / JSON"| API
+  CLI -->|"Quality Gate Execution"| API
+  GHA -->|"Automated PR Inspection"| CLI
+  PROD -->|"Zero-Trust Ingest (PII Redacted)"| API
 
-  subgraph Obs["Observability"]
-    LF["Langfuse"]
-    PROM["Prometheus + Grafana"]
-  end
+  API --> SEC
+  SEC --> SSRF
+  SSRF --> AUTH
 
-  U1 --> UI
-  U2 --> UI
-  CI --> CLI
-  UI --> API
-  CLI --> API
-  API --> AUTH
-  API --> PG
-  API --> REDIS
-  REDIS --> SG
-  REDIS --> SIM
-  REDIS --> EVAL
-  REDIS --> DRIFT
-  SG --> LITE
-  SIM --> LITE
-  EVAL --> LITE
-  LITE --> OLL
-  SIM -->|"simulated customer turns"| T1
-  SIM -->|"simulated customer turns"| T2
-  T1 -->|"agent replies"| SIM
-  T2 -->|"agent replies"| SIM
-  PROD -->|"trace ingest SDK / webhook"| API
-  API --> MON
-  MON -->|"sampled traces"| REDIS
-  EVAL --> PG
-  DRIFT --> PG
-  DRIFT --> ALERT
-  ALERT -->|"Slack, Email, Webhook"| U1
-  RPT --> S3
-  RPT --> PG
-  UI --> RPT
-  LITE --> LF
+  AUTH --> SG
+  AUTH --> SIM
+  AUTH --> DRIFT
+
+  SIM -->|"Dynamic Adversarial Turns"| Targets
+  Targets -->|"Agent Response Stream"| SIM
+  SIM -->|"Conversation Transcripts"| JUDGE
+  SIM -->|"Telemetry & Execution Times"| RULES
+
+  JUDGE --> ROUTER
+  SG --> ROUTER
+  ROUTER --> GROQ_PRIMARY
+  ROUTER -.->|"Automatic TPM Backoff & Failover"| GROQ_FB
+
+  JUDGE -->|"Verifiable Grounded Verdicts"| PG
+  RULES -->|"Rule Scoring & Violations"| PG
+  DRIFT -->|"Statistical Baseline Comparison"| PG
+  DRIFT -->|"P-Value Significance Threshold"| ALERT
+
+  ALERT -->|"Slack / Email / Webhook Alerts"| UI
   API --> PROM
-  SIM --> PG
-  SG --> PG
+  API --> REDIS
+  API --> PG
