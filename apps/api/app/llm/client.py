@@ -38,8 +38,13 @@ class LLMClient:
     ) -> LLMResponse:
         selected_model = model or settings.JUDGE_MODEL
 
+        groq_key = os.environ.get("GROQ_API_KEY") or getattr(settings, "GROQ_API_KEY", None)
+        if groq_key and "GROQ_API_KEY" not in os.environ:
+            os.environ["GROQ_API_KEY"] = groq_key
+
         has_real_key = bool(
-            settings.LITELLM_API_BASE
+            groq_key
+            or settings.LITELLM_API_BASE
             or os.environ.get("OPENAI_API_KEY")
             or os.environ.get("GEMINI_API_KEY")
             or os.environ.get("ANTHROPIC_API_KEY")
@@ -83,7 +88,7 @@ class LLMClient:
                 seed=seed,
                 max_tokens=max_tokens,
                 api_base=settings.LITELLM_API_BASE,
-                timeout=5.0,
+                timeout=15.0,
             )
             choice = response.choices[0]
             content = choice.message.content or ""

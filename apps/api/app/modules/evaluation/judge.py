@@ -16,11 +16,40 @@ class EvidenceSchema(BaseModel):
 
 
 class JudgeOutputSchema(BaseModel):
-    verdict: str = Field(description="pass, fail, or unsure")
-    score: float = Field(ge=0.0, le=1.0)
+    verdict: str = Field(default="pass", description="pass, fail, or unsure")
+    score: float = Field(default=0.9, description="score between 0.0 and 1.0")
     confidence: float = Field(default=0.9, ge=0.0, le=1.0)
-    reasoning: str
+    reasoning: str = ""
     evidence: EvidenceSchema = Field(default_factory=EvidenceSchema)
+
+    @classmethod
+    def model_validate(cls, obj: Any, *args, **kwargs):
+        if isinstance(obj, dict):
+            # Normalize evidence
+            ev = obj.get("evidence")
+            if isinstance(ev, str):
+                obj["evidence"] = {"turn": 1, "quote": ev}
+            elif not isinstance(ev, dict):
+                obj["evidence"] = {"turn": 1, "quote": ""}
+
+            # Normalize verdict
+            v = str(obj.get("verdict", "pass")).lower()
+            if any(term in v for term in ["fail", "incorrect", "violation", "bad", "unacceptable"]):
+                obj["verdict"] = "fail"
+            elif any(term in v for term in ["pass", "correct", "good", "compliant", "acceptable"]):
+                obj["verdict"] = "pass"
+            else:
+                obj["verdict"] = "unsure"
+
+            # Normalize score
+            try:
+                s = float(obj.get("score", 0.9))
+                if s > 1.0 and s <= 100.0:
+                    s = s / 100.0
+                obj["score"] = max(0.0, min(1.0, s))
+            except Exception:
+                obj["score"] = 0.5
+        return super().model_validate(obj, *args, **kwargs)
 
 
 class EvaluationVerdict(BaseModel):

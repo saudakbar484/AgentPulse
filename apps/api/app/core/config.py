@@ -40,10 +40,11 @@ class Settings(BaseSettings):
     S3_REGION: str = "us-east-1"
 
     # LLM Gateway
+    GROQ_API_KEY: str | None = None
     LITELLM_API_BASE: str | None = None
-    SIMULATOR_MODEL: str = "ollama/qwen2.5:7b"
-    GENERATOR_MODEL: str = "ollama/qwen2.5:7b"
-    JUDGE_MODEL: str = "ollama/qwen2.5:7b"
+    SIMULATOR_MODEL: str = "groq/openai/gpt-oss-20b"
+    GENERATOR_MODEL: str = "groq/openai/gpt-oss-120b"
+    JUDGE_MODEL: str = "groq/openai/gpt-oss-120b"
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 
     # Demo Bot
