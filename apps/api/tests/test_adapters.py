@@ -9,18 +9,18 @@ from app.core.errors import SSRFSecurityError
 async def test_ssrf_validator_blocks_private_ips():
     # Loopback
     with pytest.raises(SSRFSecurityError):
-        validate_target_url("http://127.0.0.1:8000/api")
+        validate_target_url("http://127.0.0.1:8000/api", allow_private_ips=False)
 
     # Cloud metadata
     with pytest.raises(SSRFSecurityError):
-        validate_target_url("http://169.254.169.254/latest/meta-data/")
+        validate_target_url("http://169.254.169.254/latest/meta-data/", allow_private_ips=False)
 
     # RFC 1918 Private ranges
     with pytest.raises(SSRFSecurityError):
-        validate_target_url("http://192.168.1.1/chat")
+        validate_target_url("http://192.168.1.1/chat", allow_private_ips=False)
 
     with pytest.raises(SSRFSecurityError):
-        validate_target_url("http://10.0.0.1/chat")
+        validate_target_url("http://10.0.0.1/chat", allow_private_ips=False)
 
 
 @pytest.mark.asyncio

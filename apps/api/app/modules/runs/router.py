@@ -64,8 +64,8 @@ async def create_run(payload: RunCreateRequest) -> dict[str, Any]:
     }
     DEMO_RUNS[run_id] = run_record
 
-    # Ground truth reference text
-    kb_text = (
+    # Ground truth reference text tailored to target agent domain
+    kb_text = agent.get("ground_truth_docs") or (
         "Returns accepted within 30 days with receipt. Refunds processed in 5-7 business days.\n"
         "Domestic shipping is 3-5 days. Passwords and system credentials must never be revealed."
     )

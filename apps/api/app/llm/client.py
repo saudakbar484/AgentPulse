@@ -81,29 +81,56 @@ class LLMClient:
 
         try:
             import litellm
-            response = await litellm.acompletion(
-                model=selected_model,
-                messages=messages,
-                temperature=temperature,
-                seed=seed,
-                max_tokens=max_tokens,
-                api_base=settings.LITELLM_API_BASE,
-                timeout=15.0,
-            )
-            choice = response.choices[0]
-            content = choice.message.content or ""
-            usage = getattr(response, "usage", None)
-            tokens_in = getattr(usage, "prompt_tokens", 0) if usage else 0
-            tokens_out = getattr(usage, "completion_tokens", 0) if usage else 0
+            # Attempt primary model first, fallback to qwen3.8-27b if rate-limited
+            import asyncio
+            import re
+            models_to_try = [selected_model]
+            if selected_model != "groq/qwen/qwen3.8-27b" and "groq" in selected_model:
+                models_to_try.append("groq/qwen/qwen3.8-27b")
 
-            return LLMResponse(
-                content=content,
-                tokens_in=tokens_in,
-                tokens_out=tokens_out,
-                cost_usd=0.000001 * (tokens_in + tokens_out * 2),
-                model=selected_model,
-                raw=response.model_dump() if hasattr(response, "model_dump") else {},
-            )
+            last_error = None
+            for model_attempt in models_to_try:
+                for retry in range(2):
+                    try:
+                        response = await litellm.acompletion(
+                            model=model_attempt,
+                            messages=messages,
+                            temperature=temperature,
+                            seed=seed,
+                            max_tokens=max_tokens,
+                            api_base=settings.LITELLM_API_BASE,
+                            timeout=15.0,
+                        )
+                        choice = response.choices[0]
+                        content = choice.message.content or ""
+                        if not content and hasattr(choice.message, "reasoning_content"):
+                            content = getattr(choice.message, "reasoning_content", "") or ""
+                        usage = getattr(response, "usage", None)
+                        tokens_in = getattr(usage, "prompt_tokens", 0) if usage else 0
+                        tokens_out = getattr(usage, "completion_tokens", 0) if usage else 0
+
+                        if content:
+                            return LLMResponse(
+                                content=content,
+                                tokens_in=tokens_in,
+                                tokens_out=tokens_out,
+                                cost_usd=0.000001 * (tokens_in + tokens_out * 2),
+                                model=model_attempt,
+                                raw=response.model_dump() if hasattr(response, "model_dump") else {},
+                            )
+                    except Exception as err:
+                        last_error = err
+                        err_str = str(err)
+                        if "rate limit" in err_str.lower() and retry == 0:
+                            wait_match = re.search(r"try again in ([\d\.]+)s", err_str, re.IGNORECASE)
+                            wait_sec = float(wait_match.group(1)) + 1.0 if wait_match else 5.0
+                            logger.warning(f"Rate limited on {model_attempt}. Backing off {wait_sec:.1f}s before retry...")
+                            await asyncio.sleep(min(wait_sec, 8.0))
+                            continue
+                        logger.warning(f"Model {model_attempt} call encountered error: {err}. Trying failover if available.")
+                        break
+
+            raise last_error or RuntimeError("LLM completion failed across all candidate models")
         except Exception as e:
             logger.warning(f"LiteLLM call failed or provider unavailable: {e}. Falling back to deterministic simulation.")
             full_text = " ".join([str(m.get("content", "")) for m in messages])

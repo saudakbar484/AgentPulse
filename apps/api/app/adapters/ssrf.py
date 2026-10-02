@@ -5,9 +5,10 @@ from app.core.config import get_settings
 from app.core.errors import SSRFSecurityError
 
 
-def validate_target_url(url: str) -> None:
+def validate_target_url(url: str, allow_private_ips: bool | None = None) -> None:
     settings = get_settings()
-    if settings.SSRF_ALLOW_PRIVATE_IPS:
+    allow = settings.SSRF_ALLOW_PRIVATE_IPS if allow_private_ips is None else allow_private_ips
+    if allow:
         return
 
     parsed = urlparse(url)
