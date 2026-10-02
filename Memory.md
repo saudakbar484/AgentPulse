@@ -1,0 +1,78 @@
+## 1. Project Identity & Status
+- **Product Name:** AgentPulse
+- **Tagline:** "CI & Continuous Behavioral Observability for AI Agents"
+- **Status:** Phase 0 & Phase 1 Foundations & MVP Complete (All backend and frontend verified)
+- **Aesthetic:** High-Definition Neumorphic Light UI (Porcelain base `#EEF2F6`, Electric Sapphire Blue `#2563EB`, tactile dual-shadows, micro-spring transitions, WCAG 2.1 AA compliant).
+
+## 2. Key Architectural Decisions (ADR Tracker)
+- **ADR-001 (Modular Monolith):** FastAPI API + Arq Workers on Redis sharing unified domain models in `apps/api/app`.
+- **ADR-002 (Storage):** PostgreSQL 16 + `pgvector` for both relational persistence and semantic embeddings (eliminating external vector DB overhead).
+- **ADR-003 (LLM Gateway):** LiteLLM abstraction managing Ollama (dev), vLLM (prod), and hosted endpoints with centralized token accounting and JSON repair.
+- **ADR-004 (Judging Protocol):** Evidence-enforced judging: any `fail` verdict requires a verifiable verbatim quote present in the transcript; otherwise downgraded to `unsure`.
+- **ADR-005 (Design System):** High-definition Neumorphic light theme with tactile dual shadows, high-contrast typography, and electric blue interactive accents.
+- **ADR-006 (Calibration & Inter-Annotator Agreement):** Cohen's kappa ($\kappa$) calculated against golden datasets with mandatory $\kappa \ge 0.70$ benchmark before deploying candidate judge prompts.
+- **ADR-007 (Audit-Locked Overrides):** Any human verdict override must include an immutable justification record and signer identity in the audit trail.
+- **ADR-008 (PostgreSQL Row-Level Security):** Mandatory database-level RLS with `SET LOCAL app.current_org_id` context ensuring zero cross-tenant leakage.
+- **ADR-009 (Adversarial Prompt Sandboxing):** Untrusted dialog transcripts encapsulated with random nonce XML tags to block prompt injection attacks against LLM judges.
+- **ADR-010 (Circuit Breaker Fast-Fail):** Downstream target agents, LiteLLM gateways, and alert dispatchers governed by automatic trip and half-open recovery probes.
+
+## 3. Milestones Completed
+- **Phase A Deliverables:** Brand chosen (**AgentPulse**), architecture validated, value proposition articulated.
+- **Phase 0 Foundations:** Monorepo directory tree, docker-compose dev stack, FastAPI app skeleton, SQLAlchemy 2 async base repository with mandatory `org_id` tenant scoping, LiteLLM gateway client with JSON repair.
+- **Phase 1 MVP:**
+  - Full domain models (Users, Orgs, Agents, Suites, Scenarios, Runs, Conversations, Turns, MetricDefinitions, Evaluations, Traces, Alerts).
+  - Outbound adapters (`http_json`, `openai_compat`, `mock`) with socket-level SSRF IP firewall.
+  - Multi-profile synthetic Demo Bot (`good`, `weak-safety`, `hallucinating`, `rude`).
+  - Combinatorial Scenario Generator (Persona x Goal x Tactic).
+  - Multi-turn conversation simulator with stop tokens (`[GOAL_REACHED]`, `[GIVE_UP]`, `max_turns`).
+  - Calibrated LLM-judge framework with anti-hallucination verbatim quote verification and 3-sample majority vote.
+  - Complete Next.js frontend with tactile Neumorphic design system, dual shadows, electric blue accents, and verified zero-error production build (`npm run build`).
+- **Phase 2 Monitoring & Alpha:**
+  - Statistical Drift Detector (`apps/api/app/modules/monitoring/drift.py`) with two-proportion z-test ($p < 0.01$, $\Delta \ge 5\%$) and Welch t-test.
+  - Alert Manager (`apps/api/app/modules/monitoring/alert_manager.py`) with 6h cooldown, auto-resolution on recovery, and Slack webhook integration.
+  - Python SDK (`packages/sdk-python/agentpulse/`) with async trace context manager.
+  - Regression-from-trace endpoint (`POST /v1/traces/{id}/convert-to-scenario`) synthesizing 1-click test scenarios.
+  - Traffic simulator (`demo/traffic_simulator.py`) with switchable regression injection.
+  - AgentPulse CLI (`apps/cli/agentpulse_cli/main.py`) with pass/fail exit codes and JUnit XML output.
+  - Full automated test suite: 16/16 tests passing.
+- **Phase 3 Quality, Collaboration & Beta:**
+  - Golden Dataset v1 (`demo/datasets/golden_set_v1.json`) containing 200 expert-labelled turns across core evaluation rubrics.
+  - Calibration Engine (`apps/api/app/modules/evaluation/calibration.py`) computing Cohen's kappa ($\kappa$), precision, recall, accuracy, and confusion matrices.
+  - Published Multi-Model Benchmark (`docs/eval-report.md`) confirming Qwen2.5-32B achieves $\kappa \ge 0.78$ inter-annotator agreement.
+  - Human Review Queue (`GET /v1/metrics/review-queue`) & Audit-Locked Verdict Overrides (`POST /v1/metrics/evaluations/{id}/override`).
+  - Custom Metric Builder (`POST /v1/metrics/custom`) with RBAC role authorization.
+  - Multi-Run Comparison Engine (`GET /v1/runs/compare/diff`) calculating metric deltas, regression flags, and side-by-side scorecard diffs.
+  - Shareable Sign-Off Reports: Tokenized public view (`GET /v1/reports/public/{token}`) and standalone HTML exports (`GET /v1/reports/html/{id}`).
+  - Hierarchical Role-Based Access Control (`apps/api/app/core/rbac.py`) protecting sensitive mutative operations.
+  - Interactive Neumorphic Dashboard tabs ("Diff & Compare" and "Calibration & Evals") with interactive modals.
+  - Full automated test suite: 22/22 tests passing.
+- **Phase 4 Hardening (Security & Performance):**
+  - PostgreSQL Row-Level Security (`apps/api/app/db/rls.py`) DDL generator and runtime tenant boundary enforcement.
+  - Security & Observability Middleware (`apps/api/app/core/middleware.py`) enforcing OWASP headers (`nosniff`, `DENY`, `CSP`, `HSTS`) and sliding-window rate limiting (120 req/min general, 20 req/min auth).
+  - Security Audit Logging subsystem (`apps/api/app/core/audit.py`) with admin query API (`GET /v1/audit/logs`).
+  - Adversarial Prompt-Injection Firewall (`apps/api/app/modules/evaluation/sanitizer.py`) protecting LLM judges with cryptographic nonce XML sandboxing and verbatim citation verification.
+  - Circuit Breakers (`apps/api/app/core/resilience.py`) with automatic trip, fast-fail, and half-open recovery probes for downstream targets.
+  - Prometheus Metrics Registry (`apps/api/app/core/metrics.py`) exposing standard exposition at `/metrics`.
+  - Production Load Test Harness (`demo/load_test.py`) validating sustained high-throughput traffic (>100 req/min).
+  - Frontend Neumorphic Security & Hardening Dashboard tab (`activeTab === "security"`).
+  - Full automated test suite: 31/31 tests passing.
+- **Phase 5 Docs, Pilot & Polish:**
+  - 3 Enterprise Pilot Agents Onboarded: `agent_ecommerce` (Retail & returns), `agent_financial` (Apex Banking & wealth advice disclaimers), `agent_healthcare` (CarePulse Triage with 911 escalation & diagnosis refusal).
+  - Documentation & Developer Guides API (`apps/api/app/modules/docs/router.py`) delivering quickstart, target adapters, metric rubrics, CI/CD, and security specs.
+  - Interactive "Docs & Guides" Dashboard Tab (`activeTab === "docs"`) with copyable cURL, Python SDK, and GitHub Actions templates.
+  - GitHub Actions Workflow Template (`.github/workflows/agentpulse-ci.yml`) for automated red-team PR regression gates.
+  - Comprehensive Benchmark Study (`docs/benchmark-report.md`) establishing Qwen2.5-32B achieves $\kappa = 0.82$ at 17.7x lower cost than cloud APIs.
+  - Verified production static bundle compilation (`npm run build` exits 0 with zero lint or type errors).
+  - Full automated test suite: **35/35 tests passing**.
+- **Phase 6 Production Release Checklist (v1.0.0 GA):**
+  - Production Changelog (`CHANGELOG.md`) documenting all features from v0.1.0 MVP through v1.0.0 GA.
+  - Comprehensive Operations Runbook (`docs/runbooks/operations-runbook.md`) detailing alert triage, circuit breaker recovery, database PITR drills, and canary deployment procedures.
+  - Compliance & Legal Terms (`docs/legal/privacy-policy.md`, `docs/legal/terms-of-service.md`) with explicit "designed to support compliance" disclaimers and zero-retention PII scrubbing.
+  - Fresh Account Onboarding E2E Script (`demo/fresh_onboarding_check.py`) fully operational and verified live against running backend.
+  - Comprehensive Root README (`README.md`) featuring full architecture diagrams, live endpoints, and benchmark tables.
+  - Full automated test suite: **38/38 tests passing across all 8 modules** in <3.5 seconds.
+  - Active Live Services:
+    - Frontend Dashboard: `http://localhost:3000` (Next.js 14 App Router, Neumorphic Light UI)
+    - Backend REST API: `http://localhost:8000` (FastAPI + Swagger docs at `/docs`)
+    - Prometheus Metrics: `http://localhost:8000/metrics`
+

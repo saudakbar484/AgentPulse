@@ -1,0 +1,83 @@
+flowchart LR
+  subgraph Users["Users"]
+    U1["AI Engineer / QA"]
+    U2["Account Manager / Client Viewer"]
+    CI["CI Pipeline - GitHub Actions"]
+  end
+
+  subgraph Frontend["Frontend"]
+    UI["Next.js Dashboard"]
+    CLI["AgentPulse CLI"]
+  end
+
+  subgraph Core["AgentPulse Core - FastAPI"]
+    API["API Gateway"]
+    AUTH["Auth and RBAC"]
+    MON["Monitoring Service"]
+    ALERT["Alert Manager"]
+    RPT["Report Builder"]
+  end
+
+  subgraph Workers["Async Workers - Arq"]
+    SG["Scenario Generator"]
+    SIM["Conversation Simulator"]
+    EVAL["Evaluation Engine"]
+    DRIFT["Drift Detector"]
+  end
+
+  subgraph Data["Data Layer"]
+    REDIS[("Redis Queue")]
+    PG[("PostgreSQL + pgvector")]
+    S3[("MinIO Object Storage")]
+  end
+
+  subgraph Models["Model Layer"]
+    LITE["LiteLLM Gateway"]
+    OLL["Ollama / vLLM - Qwen, Llama"]
+  end
+
+  subgraph Targets["Agents Under Test"]
+    T1["Chatbot - HTTP / OpenAI-compatible"]
+    T2["Voice Agent - transcripts / WebSocket"]
+    PROD["Live Production Traffic"]
+  end
+
+  subgraph Obs["Observability"]
+    LF["Langfuse"]
+    PROM["Prometheus + Grafana"]
+  end
+
+  U1 --> UI
+  U2 --> UI
+  CI --> CLI
+  UI --> API
+  CLI --> API
+  API --> AUTH
+  API --> PG
+  API --> REDIS
+  REDIS --> SG
+  REDIS --> SIM
+  REDIS --> EVAL
+  REDIS --> DRIFT
+  SG --> LITE
+  SIM --> LITE
+  EVAL --> LITE
+  LITE --> OLL
+  SIM -->|"simulated customer turns"| T1
+  SIM -->|"simulated customer turns"| T2
+  T1 -->|"agent replies"| SIM
+  T2 -->|"agent replies"| SIM
+  PROD -->|"trace ingest SDK / webhook"| API
+  API --> MON
+  MON -->|"sampled traces"| REDIS
+  EVAL --> PG
+  DRIFT --> PG
+  DRIFT --> ALERT
+  ALERT -->|"Slack, Email, Webhook"| U1
+  RPT --> S3
+  RPT --> PG
+  UI --> RPT
+  LITE --> LF
+  API --> PROM
+  SIM --> PG
+  SG --> PG

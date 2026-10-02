@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --neu-bg: #EEF2F6;
+  --neu-surface: #EEF2F6;
+  --brand-blue: #2563EB;
+}
+
+body {
+  background-color: var(--neu-bg);
+  color: #0F172A;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Neumorphic Utilities */
+.neu-flat {
+  background: #EEF2F6;
+  border-radius: 16px;
+  box-shadow: 6px 6px 14px #D1D9E6, -6px -6px 14px #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neu-flat-hover:hover {
+  background: #F4F7FB;
+  transform: translateY(-2px);
+  box-shadow: 9px 9px 20px #C5D0DE, -9px -9px 20px #FFFFFF;
+}
+
+.neu-inset {
+  background: #EEF2F6;
+  border-radius: 12px;
+  box-shadow: inset 3px 3px 6px #D1D9E6, inset -3px -3px 6px #FFFFFF;
+  border: 1px solid rgba(209, 217, 230, 0.35);
+}
+
+.neu-btn-primary {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 4px 4px 10px #D1D9E6, -4px -4px 10px #FFFFFF, 0 8px 18px -4px rgba(37, 99, 235, 0.35);
+  transition: all 150ms ease-out;
+}
+
+.neu-btn-primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.neu-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.neu-btn-secondary {
+  background: #EEF2F6;
+  color: #0F172A;
+  border-radius: 12px;
+  box-shadow: 4px 4px 8px #D1D9E6, -4px -4px 8px #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 150ms ease-out;
+}
+
+.neu-btn-secondary:hover {
+  color: #2563EB;
+  box-shadow: 6px 6px 12px #C5D0DE, -6px -6px 12px #FFFFFF;
+}
+
+.neu-btn-secondary:active {
+  box-shadow: inset 2px 2px 5px #D1D9E6, inset -2px -2px 5px #FFFFFF;
+  transform: translateY(1px);
+}

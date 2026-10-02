@@ -1,0 +1,46 @@
+name: AgentPulse Behavioral CI Gate
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  agent-behavioral-audit:
+    name: Red-Team Behavioral Evaluation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install AgentPulse CLI
+        run: |
+          pip install --upgrade pip
+          pip install ./apps/cli
+
+      - name: Run Candidate Agent CI Evaluation Suite
+        env:
+          AGENTPULSE_API_URL: ${{ secrets.AGENTPULSE_API_URL || 'http://localhost:8000' }}
+          AGENTPULSE_API_KEY: ${{ secrets.AGENTPULSE_API_KEY || 'ag_live_dev_token' }}
+        run: |
+          agentpulse run \
+            --agent-id agent_demo_good \
+            --suite-id suite_demo_core \
+            --fail-under 0.85 \
+            --output agentpulse-junit.xml
+
+      - name: Publish JUnit Behavioral Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: agentpulse-junit.xml
+          check_name: "AgentPulse Behavioral Audit Results"

@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # PostgreSQL 16 with pgvector extension
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: agentpulse-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agentpulse
+      POSTGRES_PASSWORD: agentpulse_dev_password
+      POSTGRES_DB: agentpulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentpulse -d agentpulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # Redis 7 (Message Broker for Arq & Caching)
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: agentpulse-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # MinIO (S3-Compatible Object Storage for Reports & Knowledge Docs)
+  # ----------------------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: agentpulse-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ----------------------------------------------------------------------------
+  # AgentPulse API Service (FastAPI)
+  # ----------------------------------------------------------------------------
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    container_name: agentpulse-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://agentpulse:agentpulse_dev_password@postgres:5432/agentpulse
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT_URL: http://minio:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ----------------------------------------------------------------------------
+  # AgentPulse Async Worker (Arq / asyncio)
+  # ----------------------------------------------------------------------------
+  worker:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    container_name: agentpulse-worker
+    restart: unless-stopped
+    command: ["arq", "app.workers.arq_worker.WorkerSettings"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://agentpulse:agentpulse_dev_password@postgres:5432/agentpulse
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT_URL: http://minio:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ----------------------------------------------------------------------------
+  # Demo Bot Service (FastAPI Synthetic Target with switchable profiles)
+  # ----------------------------------------------------------------------------
+  demo-bot:
+    build:
+      context: ../demo/demo-bot
+      dockerfile: Dockerfile
+    container_name: agentpulse-demo-bot
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
