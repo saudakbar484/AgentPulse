@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: agentpulse-api
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /healthz
+    envVars:
+      - key: APP_NAME
+        value: AgentPulse
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: API_V1_PREFIX
+        value: /v1
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SSRF_ALLOW_PRIVATE_IPS
+        value: "true"
+      - key: JUDGE_MODEL
+        value: groq/openai/gpt-oss-20b
+      - key: SIMULATOR_MODEL
+        value: groq/openai/gpt-oss-20b
