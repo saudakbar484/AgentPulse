@@ -5,10 +5,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-COPY apps/api/pyproject.toml ./
-RUN pip install --no-cache-dir .
-
+# Copy pyproject and readme needed by hatchling build backend
+COPY apps/api/pyproject.toml apps/api/README.md ./
 COPY apps/api/app ./app
+
+RUN pip install --no-cache-dir .
 
 ENV PORT=8000
 EXPOSE 8000

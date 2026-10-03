@@ -5,10 +5,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml ./
-RUN pip install --no-cache-dir .
-
+COPY pyproject.toml README.md ./
 COPY app ./app
+
+RUN pip install --no-cache-dir .
 
 ENV PORT=8000
 EXPOSE 8000
