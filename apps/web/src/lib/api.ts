@@ -1,6 +1,4 @@
-// AgentPulse Real API Client
-
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/v1";
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://agentpulse-api-production.up.railway.app/v1";
 
 export interface AgentRecord {
   id: string;
