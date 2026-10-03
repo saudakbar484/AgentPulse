@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY apps/api/pyproject.toml apps/api/README.md ./
 COPY apps/api/app ./app
 
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir email-validator .
 
 ENV PORT=8000
 EXPOSE 8000

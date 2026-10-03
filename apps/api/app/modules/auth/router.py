@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from app.core.security import (
     create_access_token,
     generate_api_key,
@@ -25,14 +25,14 @@ DEMO_USERS: dict[str, dict[str, Any]] = {
 
 
 class RegisterRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
     full_name: str
     organization_name: str = "Default Agency"
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 
